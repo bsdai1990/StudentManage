@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>学员信息管理</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="stats-banner">
+        <div class="banner-heading">
+          <p class="eyebrow">Student Manager</p>
+          <h1>学员状态统计</h1>
+          <p class="subtle">按配置状态聚合学员数量，数据来自本地 JSON 文件。</p>
+        </div>
+        <div id="statusStats" class="status-stats"></div>
+      </section>
+
+      <section class="panel list-panel">
+        <div class="list-header">
+          <div>
+            <h2>学员列表</h2>
+            <p id="message" class="message"></p>
+          </div>
+          <div class="header-actions">
+            <button id="openStudentModal" type="button">新增学员</button>
+            <button id="openStatusModal" type="button" class="secondary">维护状态</button>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <label>
+            搜索学员
+            <input id="studentSearch" type="search" placeholder="输入姓名关键字" autocomplete="off" />
+          </label>
+          <label>
+            状态筛选
+            <select id="statusFilter">
+              <option value="all">全部状态</option>
+            </select>
+          </label>
+          <button id="refreshButton" type="button" class="secondary">刷新数据</button>
+        </div>
+
+        <div id="studentList" class="student-list"></div>
+      </section>
+    </main>
+
+    <dialog id="studentDialog" class="modal">
+      <form id="studentForm" class="modal-card" method="dialog">
+        <div class="modal-header">
+          <div>
+            <h2>新增学员</h2>
+            <p class="subtle">只记录姓名和当前状态。</p>
+          </div>
+          <button type="button" class="icon-button" data-close="studentDialog">×</button>
+        </div>
+        <label>
+          姓名
+          <input id="studentName" name="name" type="text" placeholder="请输入学员姓名" autocomplete="off" required />
+        </label>
+        <label>
+          当前状态
+          <select id="studentStatus" name="status" required></select>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="secondary" data-close="studentDialog">取消</button>
+          <button type="submit">添加学员</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="statusDialog" class="modal">
+      <form id="statusForm" class="modal-card wide" method="dialog">
+        <div class="modal-header">
+          <div>
+            <h2>维护状态</h2>
+            <p class="subtle">只维护状态名称。正在被学员使用的状态不能删除。</p>
+          </div>
+          <button type="button" class="icon-button" data-close="statusDialog">×</button>
+        </div>
+        <div id="statusEditor" class="status-editor"></div>
+        <div class="modal-actions spread">
+          <button id="addStatusRow" type="button" class="secondary">新增状态</button>
+          <div>
+            <button type="button" class="secondary" data-close="statusDialog">取消</button>
+            <button type="submit">保存状态</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <template id="studentTemplate">
+      <article class="student-card">
+        <div>
+          <h3 data-role="name"></h3>
+          <p data-role="meta" class="subtle"></p>
+        </div>
+        <div class="card-actions">
+          <select data-role="status"></select>
+          <button type="button" data-role="delete" class="danger">删除</button>
+        </div>
+      </article>
+    </template>
+
+    <template id="statTemplate">
+      <article class="stat-card">
+        <span data-role="count">0</span>
+        <strong data-role="label"></strong>
+      </article>
+    </template>
+
+    <template id="statusRowTemplate">
+      <div class="status-row compact">
+        <label>
+          状态名称
+          <input data-role="name" type="text" placeholder="例如 学习中" required />
+        </label>
+        <button type="button" data-role="remove" class="danger">删除</button>
+      </div>
+    </template>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
