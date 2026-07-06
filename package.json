@@ -6,9 +6,14 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check public/app.js && node --check functions/_shared/storage.js && node --check functions/api/students.js && node --check functions/api/students/[id].js && node --check functions/api/statuses.js"
+    "check": "node --check server.js && node --check public/app.js && node --check functions/_shared/storage.js && node --check functions/api/students.js && node --check functions/api/students/[id].js && node --check functions/api/statuses.js",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "wrangler": "^4.107.0"
   }
 }
