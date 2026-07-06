@@ -2,7 +2,24 @@
 
 一个极简 Web 应用，用于维护学员姓名和当前状态。
 
-## 两种运行模式
+## 三种运行模式
+
+### Cloudflare Workers 版本
+
+这是当前推荐部署方式，适合只能选择 Worker 的 Cloudflare 后台。
+
+- `worker.mjs`：统一处理静态资源和 `/api/*` 接口。
+- `public/`：静态页面、样式和前端交互。
+- `wrangler.toml`：Worker 入口、静态资产目录和运行配置。
+- `STUDENT_MANAGER_KV`：Cloudflare KV 绑定，用于持久化学员和状态数据。
+
+Cloudflare Workers 连接 GitHub 后，使用仓库内的 `wrangler.toml` 部署。
+
+必须在 Worker 项目里绑定 KV：
+
+```text
+Variable name: STUDENT_MANAGER_KV
+```
 
 ### 本地 Node 版本
 
@@ -25,6 +42,8 @@ http://localhost:3000
 
 ### Cloudflare Pages 版本
 
+如果你的账号可以使用 Pages，也可以继续使用：
+
 - `public/`：静态页面。
 - `functions/api/`：Cloudflare Pages Functions API。
 - `STUDENT_MANAGER_KV`：Cloudflare KV 绑定，用于持久化学员和状态数据。
@@ -35,20 +54,6 @@ Cloudflare Pages 连接 GitHub 后，配置：
 构建命令：留空
 构建输出目录：public
 根目录：/
-```
-
-如果页面要求必须填写构建命令：
-
-```text
-构建命令：echo "no build"
-构建输出目录：public
-```
-
-然后在 Cloudflare Pages 项目的 Settings → Functions → KV namespace bindings 中添加绑定：
-
-```text
-Variable name: STUDENT_MANAGER_KV
-KV namespace: 选择或新建一个 KV 命名空间
 ```
 
 ## 数据结构

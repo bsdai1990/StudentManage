@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check public/app.js && node --check functions/_shared/storage.js && node --check functions/api/students.js && node --check functions/api/students/[id].js && node --check functions/api/statuses.js"
+    "check": "node --check server.js && node --check public/app.js && node --check worker.mjs && node --check functions/_shared/storage.js && node --check functions/api/students.js && node --check functions/api/students/[id].js && node --check functions/api/statuses.js"
   },
   "engines": {
     "node": ">=18"

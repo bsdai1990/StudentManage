@@ -51,10 +51,13 @@ const writeKvJson = async (store, key, payload) => {
 };
 
 export const readBody = async (request) => {
-  if (!request.headers.get('content-length')) return {};
+  if (request.method === 'GET' || request.method === 'HEAD') return {};
+
+  const content = await request.text();
+  if (!content.trim()) return {};
 
   try {
-    return await request.json();
+    return JSON.parse(content);
   } catch (error) {
     throw Object.assign(new Error('请求体必须是合法 JSON'), { statusCode: 400 });
   }

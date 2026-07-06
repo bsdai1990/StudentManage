@@ -1,11 +1,73 @@
 # StudentManage 部署说明
 
-这个项目现在支持两种部署方式：
+这个项目现在支持三种部署方式：
 
+- Cloudflare Workers：推荐用于当前只能选择 Worker 的部署入口，使用 Worker Static Assets 和 KV。
+- Cloudflare Pages：如果账号可以使用 Pages，可使用 Pages Functions 和 KV。
 - 本地/VPS Node 服务：继续使用 `server.js` 和 JSON 文件存储。
-- Cloudflare Pages：使用 `public/` 静态资源、`functions/` API 和 Cloudflare KV 存储。
 
-## 方式一：Cloudflare Pages 部署
+## 方式一：Cloudflare Workers 部署
+
+当前线上地址是 `workers.dev`，应使用此方式。
+
+### 1. 连接 GitHub
+
+在 Cloudflare Workers 中导入当前仓库：
+
+```text
+https://github.com/bsdai1990/StudentManage.git
+```
+
+仓库根目录已有 `wrangler.toml`：
+
+```text
+main = "worker.mjs"
+assets.directory = "./public"
+assets.binding = "ASSETS"
+```
+
+部署后，Worker 会同时提供：
+
+- `/`、`/app.js`、`/styles.css` 等静态文件
+- `/api/students`、`/api/statuses` 等接口
+
+### 2. 配置 KV 绑定
+
+完整功能必须绑定 KV，否则 `/api/students` 会返回服务错误。
+
+进入 Worker 项目设置，添加 KV namespace binding：
+
+```text
+Variable name: STUDENT_MANAGER_KV
+KV namespace: 新建或选择一个 KV 命名空间
+```
+
+变量名必须完全一致。
+
+### 3. 数据初始化
+
+如果 KV 里还没有数据，应用会自动使用内置默认数据启动：
+
+- 状态：`新学员`、`学习中`、`暂停`、`已结课`
+- 示例学员：`张三`、`李四`
+
+后续在页面里新增、删除、修改的数据会写入 KV。
+
+如果要迁移本地数据，可在 Cloudflare KV 中手动写入两个键：
+
+```text
+students
+statuses
+```
+
+值分别使用本地文件内容：
+
+- `data/students.json`
+- `config/statuses.json`
+
+## 方式二：Cloudflare Pages 部署
+
+如果你的账号可以选择 Pages，也可以使用此方式。
 
 ### 1. 连接 GitHub
 
@@ -36,8 +98,6 @@ https://github.com/bsdai1990/StudentManage.git
 
 ### 3. 配置 KV 绑定
 
-Cloudflare Pages 不能持久写入仓库内 JSON 文件，所以完整功能依赖 KV。
-
 进入 Pages 项目：
 
 ```text
@@ -51,30 +111,7 @@ Variable name: STUDENT_MANAGER_KV
 KV namespace: 新建或选择一个 KV 命名空间
 ```
 
-生产环境和预览环境建议都绑定同名变量。
-
-### 4. 数据初始化
-
-如果 KV 里还没有数据，应用会自动使用内置默认数据启动：
-
-- 状态：`新学员`、`学习中`、`暂停`、`已结课`
-- 示例学员：`张三`、`李四`
-
-后续在页面里新增、删除、修改的数据会写入 KV。
-
-如果要迁移本地数据，可在 Cloudflare KV 中手动写入两个键：
-
-```text
-students
-statuses
-```
-
-值分别使用本地文件内容：
-
-- `data/students.json`
-- `config/statuses.json`
-
-## 方式二：本地/VPS Node 部署
+## 方式三：本地/VPS Node 部署
 
 ### 环境要求
 

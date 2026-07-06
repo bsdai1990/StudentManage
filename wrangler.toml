@@ -1,0 +1,13 @@
+name = "studentmanage"
+main = "worker.mjs"
+compatibility_date = "2024-11-11"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# 在 Cloudflare Workers 后台绑定 KV 时，变量名必须使用：STUDENT_MANAGER_KV
+# 如果使用 wrangler 命令部署，可取消下面配置的注释，并替换为你的 KV namespace id。
+# [[kv_namespaces]]
+# binding = "STUDENT_MANAGER_KV"
+# id = "你的 KV namespace id"
