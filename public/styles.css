@@ -21,12 +21,14 @@ select {
 }
 
 button {
+  min-height: 44px;
   border: 0;
   border-radius: 12px;
   padding: 12px 18px;
   color: #fff;
   background: #2563eb;
   cursor: pointer;
+  touch-action: manipulation;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
@@ -65,11 +67,13 @@ button.icon-button {
 input,
 select {
   width: 100%;
+  min-height: 44px;
   border: 1px solid #d6deec;
   border-radius: 12px;
   padding: 12px 14px;
   color: #172033;
   background: #fff;
+  font-size: 16px;
   outline: none;
 }
 
@@ -210,10 +214,16 @@ label {
 .student-card {
   grid-template-columns: 1fr auto;
   align-items: center;
+  min-width: 0;
   padding: 18px;
   border: 1px solid #e5eaf3;
   border-radius: 18px;
   background: #fff;
+}
+
+.student-card h3,
+.student-card p {
+  overflow-wrap: anywhere;
 }
 
 .card-actions {
@@ -297,11 +307,27 @@ label {
 
 @media (max-width: 760px) {
   .list-header,
-  .toolbar,
   .student-card,
   .card-actions,
   .status-row {
     grid-template-columns: 1fr;
+  }
+
+  .toolbar {
+    grid-template-columns: minmax(180px, 1fr) minmax(132px, 150px) auto;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .toolbar label,
+  .toolbar button {
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .toolbar button {
+    min-width: 96px;
   }
 
   .header-actions,
@@ -310,5 +336,138 @@ label {
   .modal-actions.spread > div {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .header-actions {
+    justify-content: stretch;
+  }
+
+  .stats-banner,
+  .panel,
+  .modal-card {
+    border-radius: 20px;
+  }
+
+  .status-stats {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(112px, 1fr);
+    grid-template-columns: none;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 520px) {
+  body {
+    background: #f4f7fb;
+  }
+
+  .shell {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .stats-banner {
+    gap: 20px;
+    margin-bottom: 12px;
+    padding: 22px 18px;
+    border-radius: 22px;
+  }
+
+  .banner-heading h1 {
+    font-size: 30px;
+    line-height: 1.08;
+  }
+
+  .panel {
+    margin-top: 12px;
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .list-header {
+    gap: 14px;
+  }
+
+  .toolbar {
+    grid-template-columns: minmax(168px, 1fr) minmax(120px, 140px) minmax(88px, auto);
+    gap: 10px;
+  }
+
+  .toolbar input,
+  .toolbar select,
+  .toolbar button {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .toolbar button {
+    min-width: 88px;
+  }
+
+  .status-stats {
+    grid-auto-columns: minmax(104px, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    gap: 6px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .stat-card span {
+    font-size: 30px;
+  }
+
+  .student-card {
+    gap: 14px;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .card-actions {
+    gap: 10px;
+  }
+
+  .modal {
+    width: calc(100% - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+
+  .modal-card,
+  .modal-card.wide {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    overflow: auto;
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .modal-header {
+    align-items: flex-start;
+  }
+
+  .modal-actions {
+    padding-top: 4px;
+  }
+
+  .status-row {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .status-stats {
+    grid-auto-columns: minmax(96px, 1fr);
+  }
+
+  .toolbar {
+    grid-template-columns: minmax(150px, 1fr) minmax(112px, 128px) minmax(80px, auto);
+  }
+
+  .banner-heading h1 {
+    font-size: 26px;
   }
 }
