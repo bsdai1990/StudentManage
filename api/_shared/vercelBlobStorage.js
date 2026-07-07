@@ -162,11 +162,7 @@ const sendJson = (response, statusCode, payload) => {
 
 const errorPayload = (statusCode, error) => {
   if (statusCode !== 500) return { message: error.message };
-
-  return {
-    message: '服务内部错误',
-    detail: process.env.VERCEL ? `${error.name || 'Error'}: ${error.message || '未知错误'}` : undefined,
-  };
+  return { message: '服务内部错误' };
 };
 
 const sendError = (response, error) => {
