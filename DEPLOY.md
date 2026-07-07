@@ -1,12 +1,61 @@
 # StudentManage 部署说明
 
-这个项目现在支持三种部署方式：
+这个项目现在支持四种部署方式：
 
-- Cloudflare Workers：推荐用于当前只能选择 Worker 的部署入口，使用 Worker Static Assets 和 KV。
+- Vercel：使用 Vercel Serverless API 和 Vercel Blob。
+- Cloudflare Workers：推荐用于当前只能选择 Worker 的 Cloudflare 部署入口，使用 Worker Static Assets 和 KV。
 - Cloudflare Pages：如果账号可以使用 Pages，可使用 Pages Functions 和 KV。
 - 本地/VPS Node 服务：继续使用 `server.js` 和 JSON 文件存储。
 
-## 方式一：Cloudflare Workers 部署
+## 方式一：Vercel 部署
+
+Vercel 不能把仓库里的 `data/students.json` 和 `config/statuses.json` 当作可写数据库。当前 Vercel 入口已独立改为：
+
+- 静态页面：`public/`
+- API：`api/`
+- 持久化：Vercel Blob
+
+Cloudflare Worker 不会读取 `api/` 目录，因此这套改造不会影响 Cloudflare KV 部署。
+
+### 1. 连接 GitHub
+
+在 Vercel 中导入当前仓库：
+
+```text
+https://github.com/bsdai1990/StudentManage.git
+```
+
+一般保持默认配置即可：
+
+```text
+Framework Preset: Other
+Build Command: 留空
+Output Directory: 留空
+Install Command: npm install
+```
+
+### 2. 启用 Blob Store
+
+进入 Vercel 项目，创建并绑定 Blob Store。绑定后，Vercel 通常会自动注入：
+
+```text
+BLOB_READ_WRITE_TOKEN
+```
+
+如果页面能打开但新增、修改、删除返回 500，优先检查这个环境变量是否存在。
+
+### 3. 数据存储位置
+
+Vercel Blob 中使用两个对象路径：
+
+```text
+student-manager/students.json
+student-manager/statuses.json
+```
+
+首次访问时如果 Blob 里还没有数据，接口会使用内置默认数据；后续页面里的新增、修改、删除会写入 Blob。
+
+## 方式二：Cloudflare Workers 部署
 
 当前线上地址是 `workers.dev`，应使用此方式。
 
@@ -65,7 +114,7 @@ statuses
 - `data/students.json`
 - `config/statuses.json`
 
-## 方式二：Cloudflare Pages 部署
+## 方式三：Cloudflare Pages 部署
 
 如果你的账号可以选择 Pages，也可以使用此方式。
 
@@ -111,7 +160,7 @@ Variable name: STUDENT_MANAGER_KV
 KV namespace: 新建或选择一个 KV 命名空间
 ```
 
-## 方式三：本地/VPS Node 部署
+## 方式四：本地/VPS Node 部署
 
 ### 环境要求
 

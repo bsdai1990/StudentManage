@@ -4,9 +4,20 @@
 
 ## 三种运行模式
 
+### Vercel 版本
+
+适合部署到 Vercel，使用 Vercel Blob 做持久化，不写入仓库里的 JSON 文件。
+
+- `api/`：Vercel Serverless API，处理 `/api/*` 接口。
+- `api/_shared/vercelBlobStorage.js`：Vercel Blob 数据层。
+- `public/`：静态页面、样式和前端交互。
+- `BLOB_READ_WRITE_TOKEN`：Vercel Blob 写入凭据，通常在项目绑定 Blob Store 后自动注入。
+
+Vercel 连接 GitHub 后，需要在项目中启用 Blob Store。启用后，新增、修改、删除学员和状态都会写入 Blob。
+
 ### Cloudflare Workers 版本
 
-这是当前推荐部署方式，适合只能选择 Worker 的 Cloudflare 后台。
+这是 Cloudflare 部署方式，适合只能选择 Worker 的 Cloudflare 后台。
 
 - `worker.mjs`：统一处理静态资源和 `/api/*` 接口。
 - `public/`：静态页面、样式和前端交互。
@@ -26,7 +37,7 @@ Variable name: STUDENT_MANAGER_KV
 - `server.js`：提供静态页面和 API。
 - `config/statuses.json`：维护可选状态。
 - `data/students.json`：存储学员数据。
-- 不需要数据库，也不需要外部依赖。
+- 本地/VPS 运行不需要数据库，首次部署执行 `npm install` 安装运行依赖。
 
 运行：
 
@@ -85,3 +96,8 @@ Cloudflare KV 中使用两个键：
 
 - `statuses`
 - `students`
+
+Vercel Blob 中使用两个对象路径：
+
+- `student-manager/statuses.json`
+- `student-manager/students.json`
