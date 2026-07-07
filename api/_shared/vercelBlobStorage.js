@@ -1,5 +1,9 @@
-const STUDENTS_KEY = 'student-manager/students.json';
-const STATUSES_KEY = 'student-manager/statuses.json';
+const { randomUUID } = require('node:crypto');
+
+const LEGACY_STUDENTS_KEY = 'student-manager/students.json';
+const LEGACY_STATUSES_KEY = 'student-manager/statuses.json';
+const STUDENTS_PREFIX = 'student-manager/students/';
+const STATUSES_PREFIX = 'student-manager/statuses/';
 
 const defaultStudents = [
   {
@@ -31,18 +35,33 @@ const normalizeStatuses = (statuses) =>
     .map((status) => (typeof status === 'string' ? status : status?.label || status?.value || ''))
     .map((status) => String(status).trim());
 
-const readBlobJson = async (key, fallback) => {
+const readPrivateJson = async (key) => {
   const { get } = await blobApi();
+  const blob = await get(key, {
+    access: 'private',
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+  });
+
+  if (!blob) return null;
+  return new Response(blob.stream).json();
+};
+
+const readBlobJson = async ({ legacyKey, prefix, fallback }) => {
+  const { list } = await blobApi();
 
   try {
-    const blob = await get(key, {
-      access: 'private',
+    const versions = await list({
+      prefix,
+      limit: 1000,
       token: process.env.BLOB_READ_WRITE_TOKEN,
     });
+    const latest = versions.blobs
+      .filter((blob) => blob.pathname.endsWith('.json'))
+      .sort((left, right) => right.pathname.localeCompare(left.pathname))[0];
 
-    if (!blob) return fallback;
+    if (latest) return readPrivateJson(latest.pathname);
 
-    return new Response(blob.stream).json();
+    return (await readPrivateJson(legacyKey)) || fallback;
   } catch (error) {
     const message = String(error.message || '').toLowerCase();
     if (error.statusCode === 404 || error.name === 'BlobNotFoundError') return fallback;
@@ -51,12 +70,13 @@ const readBlobJson = async (key, fallback) => {
   }
 };
 
-const writeBlobJson = async (key, payload) => {
+const writeBlobJson = async (prefix, payload) => {
   const { put } = await blobApi();
+  const key = `${prefix}${Date.now()}-${randomUUID()}.json`;
+
   await put(key, JSON.stringify(payload, null, 2), {
     access: 'private',
     addRandomSuffix: false,
-    allowOverwrite: true,
     contentType: 'application/json; charset=utf-8',
     token: process.env.BLOB_READ_WRITE_TOKEN,
   });
@@ -85,8 +105,8 @@ const readBody = async (request) => {
 
 const loadState = async () => {
   const [studentsData, statusesData] = await Promise.all([
-    readBlobJson(STUDENTS_KEY, { students: defaultStudents }),
-    readBlobJson(STATUSES_KEY, { statuses: defaultStatuses }),
+    readBlobJson({ legacyKey: LEGACY_STUDENTS_KEY, prefix: STUDENTS_PREFIX, fallback: { students: defaultStudents } }),
+    readBlobJson({ legacyKey: LEGACY_STATUSES_KEY, prefix: STATUSES_PREFIX, fallback: { statuses: defaultStatuses } }),
   ]);
 
   return {
@@ -96,11 +116,11 @@ const loadState = async () => {
 };
 
 const saveStudents = async (students) => {
-  await writeBlobJson(STUDENTS_KEY, { students });
+  await writeBlobJson(STUDENTS_PREFIX, { students });
 };
 
 const saveStatuses = async (statuses) => {
-  await writeBlobJson(STATUSES_KEY, { statuses });
+  await writeBlobJson(STATUSES_PREFIX, { statuses });
 };
 
 const ensureValidStudent = ({ name, status }, statuses) => {
