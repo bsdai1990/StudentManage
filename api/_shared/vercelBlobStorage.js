@@ -58,6 +58,7 @@ const writeBlobJson = async (key, payload) => {
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: 'application/json; charset=utf-8',
+    token: process.env.BLOB_READ_WRITE_TOKEN,
   });
 };
 
