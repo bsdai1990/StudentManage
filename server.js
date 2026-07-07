@@ -8,6 +8,7 @@ const publicDir = path.join(rootDir, 'public');
 const studentsFile = path.join(rootDir, 'data', 'students.json');
 const statusesFile = path.join(rootDir, 'config', 'statuses.json');
 const port = Number(process.env.PORT || 3000);
+const blobStorage = process.env.BLOB_READ_WRITE_TOKEN ? require('./api/_shared/vercelBlobStorage') : null;
 
 const json = (response, statusCode, payload) => {
   response.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -53,6 +54,8 @@ const normalizeStatuses = (statuses) =>
   statuses.map((status) => (typeof status === 'string' ? status : status.label || status.value || '')).map((status) => String(status).trim());
 
 const loadState = async () => {
+  if (blobStorage) return blobStorage.loadState();
+
   const [studentsData, statusesData] = await Promise.all([
     readJson(studentsFile, { students: [] }),
     readJson(statusesFile, { statuses: [] }),
@@ -62,6 +65,24 @@ const loadState = async () => {
     students: Array.isArray(studentsData.students) ? studentsData.students : [],
     statuses: Array.isArray(statusesData.statuses) ? normalizeStatuses(statusesData.statuses).filter(Boolean) : [],
   };
+};
+
+const saveStudents = async (students) => {
+  if (blobStorage) {
+    await blobStorage.saveStudents(students);
+    return;
+  }
+
+  await writeJson(studentsFile, { students });
+};
+
+const saveStatuses = async (statuses) => {
+  if (blobStorage) {
+    await blobStorage.saveStatuses(statuses);
+    return;
+  }
+
+  await writeJson(statusesFile, { statuses });
 };
 
 const ensureValidStudent = ({ name, status }, statuses) => {
@@ -102,7 +123,7 @@ const studentHandlers = {
     };
 
     const students = [student, ...state.students];
-    await writeJson(studentsFile, { students });
+    await saveStudents(students);
     json(response, 201, { student });
   },
 
@@ -127,7 +148,7 @@ const studentHandlers = {
       student.id === id ? { ...student, ...result.value, updatedAt: new Date().toISOString() } : student,
     );
 
-    await writeJson(studentsFile, { students });
+    await saveStudents(students);
     json(response, 200, { student: students.find((student) => student.id === id) });
   },
 
@@ -140,7 +161,7 @@ const studentHandlers = {
       return;
     }
 
-    await writeJson(studentsFile, { students });
+    await saveStudents(students);
     json(response, 200, { ok: true });
   },
 };
@@ -173,6 +194,11 @@ const ensureValidStatuses = (statuses, students = []) => {
 };
 
 const statusHandlers = {
+  list: async (_request, response) => {
+    const { statuses } = await loadState();
+    json(response, 200, { statuses });
+  },
+
   update: async (request, response) => {
     const body = await readBody(request);
     const state = await loadState();
@@ -183,7 +209,7 @@ const statusHandlers = {
       return;
     }
 
-    await writeJson(statusesFile, { statuses: result.value });
+    await saveStatuses(result.value);
     json(response, 200, { statuses: result.value });
   },
 };
@@ -224,6 +250,7 @@ const route = async (request, response) => {
 
   if (url.pathname === '/api/students' && request.method === 'GET') return studentHandlers.list(request, response);
   if (url.pathname === '/api/students' && request.method === 'POST') return studentHandlers.create(request, response);
+  if (url.pathname === '/api/statuses' && request.method === 'GET') return statusHandlers.list(request, response);
   if (url.pathname === '/api/statuses' && request.method === 'PUT') return statusHandlers.update(request, response);
   if (scope === 'api' && resource === 'students' && id && request.method === 'PUT') {
     return studentHandlers.update(request, response, id);
