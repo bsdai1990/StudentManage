@@ -32,17 +32,17 @@ const normalizeStatuses = (statuses) =>
     .map((status) => String(status).trim());
 
 const readBlobJson = async (key, fallback) => {
-  const { head } = await blobApi();
+  const { get } = await blobApi();
 
   try {
-    const blob = await head(key);
-    const response = await fetch(blob.url, { cache: 'no-store' });
+    const blob = await get(key, {
+      access: 'private',
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
 
-    if (!response.ok) {
-      throw Object.assign(new Error('读取 Blob 数据失败'), { statusCode: 500 });
-    }
+    if (!blob) return fallback;
 
-    return response.json();
+    return new Response(blob.stream).json();
   } catch (error) {
     const message = String(error.message || '').toLowerCase();
     if (error.statusCode === 404 || error.name === 'BlobNotFoundError') return fallback;
@@ -54,7 +54,7 @@ const readBlobJson = async (key, fallback) => {
 const writeBlobJson = async (key, payload) => {
   const { put } = await blobApi();
   await put(key, JSON.stringify(payload, null, 2), {
-    access: 'public',
+    access: 'private',
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: 'application/json; charset=utf-8',
