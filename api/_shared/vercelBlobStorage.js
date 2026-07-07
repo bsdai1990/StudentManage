@@ -140,10 +140,19 @@ const sendJson = (response, statusCode, payload) => {
   response.json(payload);
 };
 
+const errorPayload = (statusCode, error) => {
+  if (statusCode !== 500) return { message: error.message };
+
+  return {
+    message: '服务内部错误',
+    detail: process.env.VERCEL ? `${error.name || 'Error'}: ${error.message || '未知错误'}` : undefined,
+  };
+};
+
 const sendError = (response, error) => {
   const statusCode = error.statusCode || 500;
   if (statusCode === 500) console.error(error);
-  sendJson(response, statusCode, { message: statusCode === 500 ? '服务内部错误' : error.message });
+  sendJson(response, statusCode, errorPayload(statusCode, error));
 };
 
 const allowMethods = (request, response, methods) => {
