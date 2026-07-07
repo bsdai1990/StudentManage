@@ -270,6 +270,7 @@ const route = async (request, response) => {
 const server = http.createServer((request, response) => {
   route(request, response).catch((error) => {
     const statusCode = error.statusCode || 500;
+    if (statusCode === 500) console.error(error);
     json(response, statusCode, { message: statusCode === 500 ? '服务内部错误' : error.message });
   });
 });

@@ -44,8 +44,9 @@ const readBlobJson = async (key, fallback) => {
 
     return response.json();
   } catch (error) {
+    const message = String(error.message || '').toLowerCase();
     if (error.statusCode === 404 || error.name === 'BlobNotFoundError') return fallback;
-    if (String(error.message || '').includes('not found')) return fallback;
+    if (message.includes('not found') || message.includes('does not exist')) return fallback;
     throw error;
   }
 };
@@ -140,6 +141,7 @@ const sendJson = (response, statusCode, payload) => {
 
 const sendError = (response, error) => {
   const statusCode = error.statusCode || 500;
+  if (statusCode === 500) console.error(error);
   sendJson(response, statusCode, { message: statusCode === 500 ? '服务内部错误' : error.message });
 };
 
